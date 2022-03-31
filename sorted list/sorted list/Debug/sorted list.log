@@ -1,0 +1,24 @@
+﻿  driver.cpp
+C:\Users\권태주\OneDrive\바탕 화면\CS280\sorted list\sorted list\SortedList.cpp(6,42): warning C5051: 'maybe_unused' 특성에는 '/std:c++17' 이상이 필요합니다. 무시됩니다.
+C:\Users\권태주\OneDrive\바탕 화면\CS280\sorted list\sorted list\SortedList.cpp(250,8): warning C4834: 'nodiscard' 특성이 포함된 함수의 반환 값을 버리는 중
+C:\Users\권태주\OneDrive\바탕 화면\CS280\sorted list\sorted list\driver.cpp(868): message : 컴파일되는 함수 템플릿 인스턴스화 'void SortedList<T,std::less<T>>::merge_sort<Pred>(Sorter)'에 대한 참조를 확인하세요.
+          with
+          [
+              T=T,
+              Pred=std::less<T>,
+              Sorter=std::less<T>
+          ]
+C:\Users\권태주\OneDrive\바탕 화면\CS280\sorted list\sorted list\driver.cpp(868): message : 컴파일되는 함수 템플릿 인스턴스화 'void SortedList<T,std::less<T>>::merge_sort<Pred>(Sorter)'에 대한 참조를 확인하세요.
+          with
+          [
+              T=T,
+              Pred=std::less<T>,
+              Sorter=std::less<T>
+          ]
+C:\Users\권태주\OneDrive\바탕 화면\CS280\sorted list\sorted list\driver.cpp(990): message : 컴파일되는 함수 템플릿 인스턴스화 'void Test11<std::less<T>>(unsigned int,bool,Pred)'에 대한 참조를 확인하세요.
+          with
+          [
+              T=T,
+              Pred=std::less<T>
+          ]
+  sorted list.vcxproj -> C:\Users\권태주\OneDrive\바탕 화면\CS280\sorted list\Debug\sorted list.exe
