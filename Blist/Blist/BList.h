@@ -142,8 +142,15 @@ public:
     BListStats GetStats() const;
 
 private:
+
+    bool checkfullnode(BNode* node);
+
+  
     BNode* head_; //!< points to the first node
     BNode* tail_; //!< points to the last node
+
+    BListStats stats_;
+    bool fullnode;
 
     // Other private data and methods you may need ...
 

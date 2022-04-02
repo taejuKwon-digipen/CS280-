@@ -1,0 +1,9 @@
+﻿  driver.cpp
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\BList.cpp(25,30): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\BList.cpp(15): message : 클래스 템플릿 멤버 함수 'BList<int,1>::BList(const BList<int,1> &)'을(를) 컴파일하는 중입니다.
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\driver.cpp(1287): message : 컴파일되는 함수 템플릿 인스턴스화 'BList<int,1>::BList(const BList<int,1> &)'에 대한 참조를 확인하세요.
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\driver.cpp(106): message : 컴파일되는 클래스 템플릿 인스턴스화 'BList<int,1>'에 대한 참조를 확인하세요.
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\BList.cpp(68,30): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\BList.cpp(54): message : 클래스 템플릿 멤버 함수 'BList<int,1> &BList<int,1>::operator =(const BList<int,1> &)'을(를) 컴파일하는 중입니다.
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\driver.cpp(1364): message : 컴파일되는 함수 템플릿 인스턴스화 'BList<int,1> &BList<int,1>::operator =(const BList<int,1> &)'에 대한 참조를 확인하세요.
+  Blist.vcxproj -> C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Debug\Blist.exe

@@ -108,8 +108,8 @@ void test1_1()
     for (int i = 1; i <= 16; i++)
     {
         bl.push_front(i);
-        //DumpList(bl);
-        //std::cout << "==========================\n";
+       /* DumpList(bl);
+        std::cout << "==========================\n";*/
     }
     DumpList(bl, false);
     DumpList(bl, true);
