@@ -144,13 +144,13 @@ public:
 private:
 
     bool checkfullnode(BNode* node);
+    void split_node(BNode* curr, T value);
 
   
     BNode* head_; //!< points to the first node
     BNode* tail_; //!< points to the last node
 
     BListStats stats_;
-    bool fullnode;
 
     // Other private data and methods you may need ...
 

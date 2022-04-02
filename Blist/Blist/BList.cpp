@@ -161,6 +161,37 @@ void BList<T, Size>::push_front(const T& value)
 	}
 }
 
+template<typename T, int Size>
+void BList<T, Size>::split_node(BNode* curr, T value)
+{
+	//pushback 안한버전
+	BNode* newnode = new BNode;
+	newnode->prev = curr;
+	
+	if (Size != 1)
+	{
+		int setsize = Size / 2;
+		//노드를 만들어서 안의 데이터를 나눠줌
+		//데이터를 올바른 위치에 넣은건 아님 -> 그냥 split만 해줌
+		int value_ = 0;
+		for (int i = setsize; i < Size; i++)
+		{
+			newnode->values[value_] = curr->values[i];
+			value_++;
+
+			stats_.ItemCount++;
+			stats_.NodeCount++;
+			newnode->count++;
+		}
+
+		if (curr == tail_)
+		{
+			tail_ = newnode;
+		}
+	}
+}
+
+
 // arrays will be sorted, if calling this
 template<typename T, int Size>
 void BList<T, Size>::insert(const T& value)
@@ -172,87 +203,112 @@ void BList<T, Size>::insert(const T& value)
 
 	if (curr != nullptr)
 	{
-		if (Size != 1)
+		if (Size == 1)
 		{
-			for (int i = 0; i < stats_.NodeCount; i++)
+			//sort 추가
+			if (stats_.ItemCount == 2)
 			{
-				for (int j = 0; j < stats_.ArraySize; j++)
+				if (value < curr->values[0])
 				{
+					BNode* storage = curr->next;
 
-					if (value < curr->values[j])
+					tail_->prev = storage;
+					tail_ = curr;
+					head_ = storage;
+					head_->next = curr;
+					stats_.ItemCount++;
+					tail_->next = nullptr;
+				}
+			}
+			else if (stats_.ItemCount >= 3)
+			{
+				BNode* unsorted = head_;
+				BNode* endofsorted = nullptr;
+
+				for (int i = 0; i < stats_.NodeCount; i++)
+				{
+					unsorted = unsorted->next;
+					endofsorted = unsorted->prev;
+
+					for (int j = i; j > 0; j--)
 					{
-						if (checkfullnode(curr) == true) //노드가 다 찼을떄
+						if (unsorted->values[0] < endofsorted->values[0])
 						{
-							BNode* newnode = new BNode;
-							newnode->next = curr->next;
-							curr->next = newnode;
-							newnode->prev = curr;
-
-							for (int k = static_cast<int>(Size / 2); k < Size; k++)
+							if (unsorted == tail_)
 							{
-								newnode->values[first] = curr->values[k];
-								first++;
-							} //노드를 만들어서 안의 데이터를 나눠줌
+								BNode* storage = endofsorted->prev;
+								tail_ = endofsorted;
+								tail_->prev = unsorted;
+								unsorted->next = endofsorted;
+								unsorted->prev = storage;
+								storage->next = unsorted;
+								tail_->next = nullptr;
 
-							for (int m = curr->count; m > 0; m--)
-							{
-								if (value < curr->values[m])
-								{
-									for (int push = curr->count; push > 0; push--)
-									{
-										curr->values[push + 1] = curr->values[push];
-									}
-									curr->values[m] = value;
-									curr->count++;
-								}
-								else {
-									break;
-								}
 							}
+							else {
+								BNode* storage1 = unsorted->next;
 
-							for (int n = 0; n < newnode->count; n++)
-							{
-								if (value < newnode->values[n])
-								{
-									if (value < newnode->values[n])
-									{
-										for (int push = newnode->count; push > 0; push--)
-										{
-											newnode->values[push + 1] = newnode->values[push];
-										}
-										newnode->values[n] = value;
-										newnode->count++;
-									}
-								}
-								else {
-									break;
-								}
+								unsorted->next->prev = endofsorted;
+								unsorted->next = endofsorted;
+								unsorted->prev = endofsorted->prev;
+
+								endofsorted->prev->next = unsorted;
+								endofsorted->next = storage1;
+								endofsorted->prev = unsorted;
 							}
-
-							stats_.ItemCount++;
-							stats_.NodeCount++;
+							endofsorted = endofsorted->prev;
 						}
-						else if (checkfullnode(curr) == false) //노드 다 안참
-						{
-							for (int l = j; l > 0; l--)
-							{
-								curr->values[l + 1] = curr->values[l];
-							}
-							curr->values[j] = value;
-							stats_.ItemCount++;
-							curr->count++;
-						}
+					}
+					if (endofsorted != head_)
+					{
+						endofsorted = endofsorted->prev;
 					}
 				}
 			}
-			if (curr->next != tail_)
-			{
-				curr = curr->next;
-			}
 		}
-		else if (Size == 1)
-		{
+		else {
 
+			if (checkfullnode(curr) == true)
+			{
+				split_node(curr, value);
+				//sort추가
+				for (int i = 0; i < stats_.NodeCount; i++)
+				{
+					for (int j = 0; j < curr->count; j++)
+					{
+						if (value < curr->values[j])
+						{
+							for (int k = curr->count - j; k > 1; k--)
+							{
+								curr->values[k + 1] = curr->values[k];
+								curr->values[k];
+								curr->count++;
+								stats_.ItemCount++;
+							}
+						}
+					}
+					curr = curr->next;
+				}
+			}
+			else {
+				for (int i = 0; i < stats_.NodeCount; i++)
+				{
+					for (int j = 0; j < curr->count; j++)
+					{
+						if (value < curr->values[j])
+						{
+							for (int k = curr->count - j; k > 1; k--)
+							{
+								curr->values[k + 1] = curr->values[k];
+								curr->values[k];
+								curr->count++;
+								stats_.ItemCount++;
+							}
+						}
+					}
+					curr = curr->next;
+				}
+			}
 		}
 	}
 }
