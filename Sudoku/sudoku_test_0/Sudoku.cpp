@@ -18,12 +18,13 @@ void Sudoku::SetupBoard(const char* values, int size)
 {
 	for (int i = 0; i < size; i++)
 	{
-
+		theBoard_[i] = values[i];
 	}
 }
 
 void Sudoku::Solve()
 {
+
 }
 
 const char* Sudoku::GetBoard() const
