@@ -1,5 +1,3 @@
-﻿  driver-sample.cpp
-  Importing getopt library
-  Sudoku.cpp
-  코드를 생성하고 있습니다...
+﻿  Sudoku.cpp
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Sudoku\sudoku_test_0\Sudoku.cpp(5,50): warning C5051: 'maybe_unused' 특성에는 '/std:c++17' 이상이 필요합니다. 무시됩니다.
   sudoku_test_0.vcxproj -> C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Sudoku\x64\Debug\sudoku_test_0.exe
