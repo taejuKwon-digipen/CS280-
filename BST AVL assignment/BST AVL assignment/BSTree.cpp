@@ -1,14 +1,14 @@
 ﻿#include "BSTree.h"
-
 template<typename T>
 BSTree<T>::BSTree(ObjectAllocator* oa, bool ShareOA)
 {
-	allocator = oa;
 	OAConfig config(true);
 	shareAllocator_ = ShareOA;
+	//count_ = node->count;
 
-	if (allocator != nullptr) 
+	if (allocator != nullptr)
 	{
+		allocator = oa;
 		freeAllocator_ = false;
 	}
 	else if (allocator == nullptr)
@@ -17,11 +17,7 @@ BSTree<T>::BSTree(ObjectAllocator* oa, bool ShareOA)
 		OAConfig config(true);
 		allocator = new ObjectAllocator(sizeof(BinTreeNode), config);
 	}
-	
-	node->data = 0;
-	node->left = new ObjectAllocator(sizeof(BinTreeNode), config);;
-	node->right = new ObjectAllocator(sizeof(BinTreeNode), config);;
-	return node;
+
 }
 
 template<typename T>
@@ -29,7 +25,7 @@ BSTree<T>::BSTree(const BSTree& rhs)
 {
 	if (rhs.shareAllocator_)
 	{
-		allocator = rhs.objAllocator_; // Use rhs' allocator
+		allocator = rhs.allocator; // Use rhs' allocator
 		freeAllocator_ = false;            // We don't own it (won't free it)
 		shareAllocator_ = true;            // If a copy of 'this object' is made, share the allocator
 	}
@@ -41,13 +37,6 @@ BSTree<T>::BSTree(const BSTree& rhs)
 		freeAllocator_ = true;   // We own the allocator, we will have to free it
 		shareAllocator_ = false; // Do not share this allocator with any other list
 	}
-
-	node = reinterpret_cast<BinTreeNode*>(allocator->Allocate());
-	node->left = reinterpret_cast<BinTreeNode*>(allocator->Allocate());
-	node->right = reinterpret_cast<BinTreeNode*>(allocator->Allocate());
-	node = rhs.node;
-	node->left = rhs.node->left;
-	node->right = rhs.node->right;
 }
 
 template<typename T>
@@ -65,15 +54,13 @@ BSTree<T>& BSTree<T>::operator=(const BSTree& rhs)
 
 	OAConfig config(true);
 
-	this->allocator = rhs.objAllocator_;
+	this->allocator = rhs.allocator;
 	allocator = new ObjectAllocator(sizeof(BinTreeNode), config);
 
 	this->freeAllocator_ = rhs.freeAllocator_;
 	this->shareAllocator_ = rhs.shareAllocator_;
 
-	this->data = rhs.data;
-	this->left = rhs.left;
-	this->right = rhs.right;
+	this->node = rhs.node;
 
 	return *this;
 }
@@ -81,20 +68,8 @@ BSTree<T>& BSTree<T>::operator=(const BSTree& rhs)
 template<typename T>
 void BSTree<T>::insert(const T& value)
 {
-	if (node == nullptr)
-	{
-		node = reinterpret_cast<BinTreeNode*>(allocator->Allocate());
-	}
-	else if (value < node->data)
-	{
-		node->left->data = value;
-	}
-	else if (value > node->data)
-	{
-		node->right->data = value;
-	}
-
-	node->count++;
+	InsertItem(node, value);
+	//node->count++;
 }
 
 template<typename T>
@@ -132,38 +107,13 @@ const typename BSTree<T>::BinTreeNode* BSTree<T>::operator[](int index) const
 	return curr;*/
 	return nullptr;
 
-};
+}
 
 template<typename T>
 void BSTree<T>::remove(const T& value)
 {
-	if (node == nullptr)
-		return;
-	else if (value < node->data)
-		node->left = nullptr;
-	else if (value > node->data)
-		node->right = nullptr;
-	else // (Data == tree->data)
-	{
-		if (node->left == nullptr)
-		{
-			BinTreeNode* temp = node;
-			node = node->right;
-		}
-		else if (node->right == nullptr)
-		{
-			BinTreeNode* temp = node;
-			node = node->left;
-		}
-		/*else
-		{
-			BinTreeNode* pred = nullptr;
-			find(node, pred);
-			node->data = pred->data;
-			remove(node->left, node->data);
-		}*/
-	}
-	node->count--;
+	DeleteItem(node, value);
+	//node->count--;
 }
 
 template<typename T>
@@ -179,14 +129,7 @@ void BSTree<T>::clear()
 template<typename T>
 bool BSTree<T>::find(const T& value, unsigned& compares) const
 {
-	if (node == nullptr)
-		return false;
-	else if (value == node->data)
-		return true;
-	else if (value < node->data)
-		return find(node->left->data, value);
-	else
-		return find(node->right->data, value);
+	ItemExists(node, value, compares);
 }
 
 template<typename T>
@@ -196,7 +139,7 @@ bool BSTree<T>::empty() const
 	{
 		return true;
 	}
-	return false; 
+	return false;
 }
 
 template<typename T>
@@ -225,6 +168,38 @@ typename BSTree<T>::BinTree BSTree<T>::root() const
 }
 
 template<typename T>
+bool BSTree<T>::ImplementedIndexing()
+{
+	return false;
+}
+
+template<typename T>
+typename BSTree<T>::BinTree& BSTree<T>::get_root()
+{
+	return node;
+}
+
+template<typename T>
+typename BSTree<T>::BinTree BSTree<T>::make_node(const T& value) const
+{
+	BinTree tree = nullptr;
+	BinTree node;
+
+	tree = reinterpret_cast<BinTree>(allocator->Allocate());
+	node = new (tree) BinTreeNode(value);
+	node->data = value;
+	node->left = 0;
+	node->right = 0;
+	return node;
+}
+
+template<typename T>
+void BSTree<T>::free_node(BinTree node)
+{
+	delete node;
+}
+
+template<typename T>
 int BSTree<T>::tree_height(BinTree tree) const
 {
 	if (tree == 0)
@@ -241,5 +216,84 @@ int BSTree<T>::tree_height(BinTree tree) const
 	}
 	else {
 		return rh + 1;
+	}
+}
+
+template<typename T>
+void BSTree<T>::find_predecessor(BinTree tree, BinTree& predecessor) const
+{
+	predecessor = tree->left;
+	while (predecessor->right != 0)
+	{
+		predecessor = predecessor->right;
+	}
+}
+
+template<typename T>
+bool BSTree<T>::ItemExists(BinTree tree, const T& value, unsigned& compares) const
+{
+	if (tree == 0)
+	{
+		compares++;
+		return false;
+	}
+	else if (value == tree->data)
+	{
+		compares++;
+		return true;
+	}
+	else if (value < tree->data)
+	{
+		compares++;
+		return ItemExists(tree->left, value, compares);
+	}
+	else
+	{
+		compares++;
+		return ItemExists(tree->right, value, compares);
+	}
+}
+
+template<typename T>
+void BSTree<T>::InsertItem(BinTree tree, const T& value)
+{
+	if (tree == 0)
+		tree = make_node(value);
+	else if (value < tree->data)
+		InsertItem(tree->left, value);
+	else if (value > tree->data)
+		InsertItem(tree->right, value);
+}
+
+template<typename T>
+void BSTree<T>::DeleteItem(BinTree tree, const T& value)
+{
+	if (tree == 0)
+		return;
+	else if (value < tree->data)
+		DeleteItem(tree->left, value);
+	else if (value > tree->data)
+		DeleteItem(tree->right, value);
+	else // (Data == tree->data)
+	{
+		if (tree->left == 0)
+		{
+			BinTree temp = tree;
+			tree = tree->right;
+			free_node(temp);
+		}
+		else if (tree->right == 0)
+		{
+			BinTree temp = tree;
+			tree = tree->left;
+			free_node(temp);
+		}
+		else
+		{
+			BinTree pred = 0;
+			find_predecessor(tree, pred);
+			tree->data = pred->data;
+			DeleteItem(tree->left, tree->data);
+		}
 	}
 }

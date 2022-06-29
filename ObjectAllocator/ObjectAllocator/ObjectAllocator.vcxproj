@@ -141,9 +141,11 @@
   <ItemGroup>
     <ClCompile Include="driver-sample.cpp" />
     <ClCompile Include="ObjectAllocator.cpp" />
+    <ClCompile Include="PRNG.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectAllocator.h" />
+    <ClInclude Include="PRNG.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

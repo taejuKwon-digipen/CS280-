@@ -281,21 +281,25 @@ public:
 
 private:
     // Some "suggested" members (only a suggestion!)
-    GenericObject* PageList_; //!< the beginning of the list of pages
-    GenericObject* FreeList_; //!< the beginning of the list of objects
+    GenericObject* PageList_ = nullptr;//!< the beginning of the list of pages
+    GenericObject* FreeList_ = nullptr;//!< the beginning of the list of objects
 
     // LOTS of other private stuff...    
     OAConfig config_;
     OAStats OAStats_;
-    MemBlockInfo blockInfo;
-    unsigned PageSize;
+
+    MemBlockInfo* blockInfo;
+
+    long unsigned PageSize;
+    unsigned char* NewPage = nullptr;
     static const unsigned char use_flag = 0x01;
     static const unsigned char nuse_flag = 0x00;
-
     unsigned use_count = 0;
 
 
     void allocate_new_page();
+    void validate_object(void* Object);
+    unsigned is_on_free_list(void* objptr) const;
 };
 
 #endif

@@ -101,20 +101,27 @@ public:
     static bool ImplementedIndexing();
 
 protected:
-   // BinTree& get_root();
-   // BinTree make_node(const T& value) const;
-   // void free_node(BinTree node);
+    BinTree& get_root();
+    BinTree make_node(const T& value) const;
+    void free_node(BinTree node);
     int tree_height(BinTree tree) const;
-   // void find_predecessor(BinTree tree, BinTree& predecessor) const;*/
+    void find_predecessor(BinTree tree, BinTree& predecessor) const;
 
 private:
     // private stuff...
-    BinTreeNode* node;
-    
+    BinTree* node;
+    bool ItemExists(BinTree tree, const T& value, unsigned& compares) const;
     ObjectAllocator* allocator;
     bool freeAllocator_;            //!< Do we own it, then free it.
+
+    void InsertItem(BinTree tree, const T& value);
     bool shareAllocator_;
+
+    void DeleteItem(BinTree tree, const T& value);
+    int count_;
 };
+
+#include "BSTree.cpp"
 
 #endif
 //--------------------------------------------------------------------------

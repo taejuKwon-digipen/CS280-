@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <iostream> 
 #include <cstdio>
 #include <cstring>
@@ -20,8 +22,8 @@ struct Student
 {
     int Age;
     float GPA;
-    long Year;
-    long ID;
+    long long Year;
+    long long ID;
 };
 
 struct Employee
