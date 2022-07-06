@@ -161,25 +161,84 @@ void BList<T, Size>::push_front(const T& value)
 	}
 }
 
+
+
+// arrays will be sorted, if calling this
 template<typename T, int Size>
-void BList<T, Size>::split_node(BNode* curr)
+void BList<T, Size>::insert(const T& value)
+{
+	push_back(value);
+	//if not empty
+	if (stats_.ItemCount != 0)
+	{
+		//find most fitting node
+		BNode* p_node = head_;
+		unsigned i = 0;
+		while (p_node != nullptr)
+		{
+			while (p_node->values[i] < value)
+			{
+				i++;
+			}
+			if (p_node != tail_ && p_node->next->values[0] < p_node->values[i])
+			{
+				p_node = p_node->next;
+			}
+			i = 0;
+			break;
+			//find i
+		}
+
+		//fitting node-> p_node.values[i] = value
+		if (p_node->count >= Size) //node full
+		{
+			split_node(p_node);
+		}
+		//if node is not full => just push back in last node
+		if (i + 1 < Size) //not last in node
+		{
+			for (unsigned int j = i; j + 1 >= Size; j++)
+			{
+				p_node->values[j + 1] = p_node->values[j];
+			} //move next number to right
+			p_node->values[i] = value; //insert
+		}
+		else { //last in node
+			p_node->values[i] = value;
+		}
+	}
+	else
+	{
+		BNode* p_node = new BNode;
+	}
+
+}
+template<typename T, int Size>
+typename BList<T, Size>::BNode* BList<T, Size>::split_node(BNode* curr)
 {
 	//pushback ¾ÈÇÑ¹öÀü
 	BNode* newnode = new BNode;
 	newnode->prev = curr;
+	BNode* currnext = curr->next;
 
-	if (Size != 1)
+	curr->next = newnode;
+	newnode->next = currnext;
+	if (stats_.ArraySize != 1)
 	{
-		int setsize = Size / 2;
-		//³ëµå¸¦ ¸¸µé¾î¼­ ¾ÈÀÇ µ¥ÀÌÅÍ¸¦ ³ª´²ÁÜ
-		//µ¥ÀÌÅÍ¸¦ ¿Ã¹Ù¸¥ À§Ä¡¿¡ ³ÖÀº°Ç ¾Æ´Ô -> ±×³É split¸¸ ÇØÁÜ
+		currnext->prev = newnode;
+	}
+
+	if (stats_.ArraySize != 1)
+	{
+		int setsize = stats_.ArraySize / 2;
 		int value_ = 0;
-		for (int i = setsize; i < Size; i++)
+
+		for (int i = setsize; i < stats_.ArraySize; i++)
 		{
 			newnode->values[value_] = curr->values[i];
 			value_++;
 
-			stats_.ItemCount++;
+			//stats_.ItemCount++;
 			stats_.NodeCount++;
 			newnode->count++;
 		}
@@ -189,128 +248,7 @@ void BList<T, Size>::split_node(BNode* curr)
 			tail_ = newnode;
 		}
 	}
-}
-
-
-// arrays will be sorted, if calling this
-template<typename T, int Size>
-void BList<T, Size>::insert(const T& value)
-{
-	push_back(value);
-
-	BNode* curr = head_;
-	// unsigned int first = 0;
-
-	if (curr != nullptr)
-	{
-		if (Size == 1)
-		{
-			//sort Ãß°¡
-			if (stats_.ItemCount == 2)
-			{
-				if (value < curr->values[0])
-				{
-					BNode* storage = curr->next;
-
-					tail_->prev = storage;
-					tail_ = curr;
-					head_ = storage;
-					head_->next = curr;
-					stats_.ItemCount++;
-					tail_->next = nullptr;
-				}
-			}
-			else if (stats_.ItemCount >= 3)
-			{
-				BNode* unsorted = head_;
-				BNode* endofsorted = nullptr;
-
-				for (int i = 0; i < stats_.NodeCount; i++)
-				{
-					unsorted = unsorted->next;
-					endofsorted = unsorted->prev;
-
-					for (int j = i; j > 0; j--)
-					{
-						if (unsorted->values[0] < endofsorted->values[0])
-						{
-							if (unsorted == tail_)
-							{
-								BNode* storage = endofsorted->prev;
-								tail_ = endofsorted;
-								tail_->prev = unsorted;
-								unsorted->next = endofsorted;
-								unsorted->prev = storage;
-								storage->next = unsorted;
-								tail_->next = nullptr;
-
-							}
-							else {
-								BNode* storage1 = unsorted->next;
-
-								unsorted->next->prev = endofsorted;
-								unsorted->next = endofsorted;
-								unsorted->prev = endofsorted->prev;
-
-								endofsorted->prev->next = unsorted;
-								endofsorted->next = storage1;
-								endofsorted->prev = unsorted;
-							}
-							endofsorted = endofsorted->prev;
-						}
-					}
-					if (endofsorted != head_)
-					{
-						endofsorted = endofsorted->prev;
-					}
-				}
-			}
-		}
-		else {
-
-			if (checkfullnode(curr) == true)
-			{
-				split_node(curr);
-				//sortÃß°¡
-				for (int i = 0; i < stats_.NodeCount; i++)
-				{
-					for (int j = 0; j < curr->count; j++)
-					{
-						if (value < curr->values[j])
-						{
-							for (int k = curr->count - j; k > 1; k--)
-							{
-								curr->values[k + 1] = curr->values[k];
-								curr->values[k] = value;
-								curr->count++;
-								stats_.ItemCount++;
-							}
-						}
-					}
-					curr = curr->next;
-				}
-			}
-			else {
-				for (int i = 0; i < stats_.NodeCount; i++)
-				{
-					for (int j = 0; j < curr->count; j++)
-					{
-						if (value < curr->values[j])
-						{
-							for (int k = curr->count - j; k > 1; k--)
-							{
-								curr->values[k + 1] = curr->values[k];
-								curr->values[k] = value;
-								curr->count++;
-								stats_.ItemCount++;
-							}
-						}
-					}
-					curr = curr->next;
-				}
-			}
-		}
-	}
+	return curr;
 }
 
 template<typename T, int Size>
@@ -538,6 +476,7 @@ bool BList<T, Size>::checkfullnode(BNode* node)
 		return false;
 	}
 }
+
 
 
 

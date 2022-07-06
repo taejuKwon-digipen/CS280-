@@ -144,7 +144,7 @@ public:
 private:
 
     bool checkfullnode(BNode* node);
-    void split_node(BNode* curr, T value);
+    BNode* split_node(BNode* curr);
 
   
     BNode* head_; //!< points to the first node
