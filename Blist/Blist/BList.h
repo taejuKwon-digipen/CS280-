@@ -149,8 +149,10 @@ private:
   
     BNode* head_; //!< points to the first node
     BNode* tail_; //!< points to the last node
-
+    BNode* findfittingNode(const T& value);
     BListStats stats_;
+
+    BNode* node = new BNode;
 
     // Other private data and methods you may need ...
 

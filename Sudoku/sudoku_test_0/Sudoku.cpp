@@ -5,70 +5,108 @@
 Sudoku::Sudoku(int basesize, SymbolType stype, [[maybe_unused]]SUDOKU_CALLBACK callback)
 {
 	basesize_ = basesize;
-	basicsize = basesize_ * basesize_;
-	theBoard_ = new char[basicsize * basicsize];
-
 	sym_type_ = stype;
+	basicsize = basesize * basesize;
+	boardsize = basicsize * basicsize;
+	theBoard_ = new char[boardsize];
 
-	stats_.moves = moves_;
-	stats_.backtracks = backtracks_;
-
-	callback = 0;
+	stats_.moves = moves_;//!< The number of total attempts
+	stats_.backtracks = backtracks_; 
+	
+	for (int i = 0; i < boardsize; i++)
+	{
+		theBoard_[i] = EMPTY_CHAR;
+	}
 }
 
 Sudoku::~Sudoku()
 {
-	delete[] theBoard_;
+	
 }
 
 void Sudoku::SetupBoard(const char* values, int size)
 {
-	for (int i = 0; i < size; i++)
+	for (unsigned i = 0; i < size; i++)
 	{
-		if (values[i] == ' ') {
-			theBoard_[i] = ' ';
-			//vecvalues.push_back(0);
-		}
-		else {
+		if (values[i] != '.')
+		{
 			theBoard_[i] = values[i];
-			//vecvalues.push_back(values[i]);
 		}
 	}
-	
+
+	/*
+	init_board with size
+		delete current board buffer
+		allocate board buffer of size+1
+		fill board buffer with EMPTY_CHAR
+		null terminate board buffer
+	*/
 }
 
 void Sudoku::Solve()
 {
-	callback_(*this, theBoard_, MessageType::MSG_STARTING, moves_, stats_.basesize, index,-1, 0);
+	callback_(*this, theBoard_, MessageType::MSG_STARTING, moves_, stats_.basesize, index, -1, 0);
 
 	while (is_empty(index) == false)
 	{
 		index++;
 	}
-	
+
 	bool success = place_value(index);
 
 	if (success == true)
 	{
-		callback_(*this, theBoard_, MessageType::MSG_FINISHED_OK, moves_, stats_.basesize, index,-1, 0);
+		callback_(*this, theBoard_, MessageType::MSG_FINISHED_OK, moves_, stats_.basesize, index, -1, 0);
 	}
 	else {
-		callback_(*this, theBoard_, MessageType::MSG_FINISHED_FAIL, moves_, stats_.basesize, index,-1, 0);
+		callback_(*this, theBoard_, MessageType::MSG_FINISHED_FAIL, moves_, stats_.basesize, index, -1, 0);
 	}
 }
 
-bool Sudoku::place_value(int index)
+bool Sudoku::isvalid(unsigned x, unsigned y, char val)
 {
-	// 같은 열, 행, 블록에 같은 숫자 = false;
-	//모든 조건 만족시 true
-	//row col cell 을 함수별로 만들어서 아니면 다시 함수실행 하는 방식으로 
+	return false;
+}
+
+bool Sudoku::place_value(int index)
+{	
+	//basicsize 가 한줄
+
+	unsigned x = 0;
+	unsigned y = 0;
+
+	unsigned index_ = index;
+
+	while (index_ <= basicsize)
+	{
+		y++;
+	}
+	x = index_;
+
+	if (y == basicsize)
+	{
+		return true;
+	}
+
+	if (theBoard_[index] != ' ')
+	{
+		if (x == basicsize - 1)
+		{
+			if (place_value(((y+1)*basicsize)) == true) //(0,y+1)
+			{
+				return true;
+			}
+		}
+		else {
+			if (place_value((y * basicsize + x)) == true)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 
 	char val;
-
-	std::vector<char> rowval;
-	std::vector<char> colval;
-	std::vector<char> cellval;
-
 	if (sym_type_ == SymbolType::SYM_NUMBER)
 	{
 		val = '1';
@@ -77,142 +115,39 @@ bool Sudoku::place_value(int index)
 		val = 'A';
 	}
 
-	int row = 1;
-	int col = 1;
-	int num = index;
-	
-	//row
-	if (index < basesize_*basesize_)
+	for (size_t i = 0; i < basicsize; i++)
 	{
-		row = 0;
-		col = 0;
-	}
-	else {
+		if (callback_(*this, theBoard_, MessageType::MSG_ABORT_CHECK, moves_, stats_.basesize, index, val, dubindex_)) {
+			return false;
+		}
 
-		while (num > basesize_*basesize_)
+		theBoard_[index] = val;
+		stats_.moves++;
+		stats_.placed++;
+		callback_(*this, theBoard_, MessageType::MSG_PLACING, moves_, stats_.basesize, index, val, dubindex_);
+
+		if (x == basicsize - 1)
 		{
-			num -= basesize_*basesize_;
-			row += 1; //(num, row)
-			col += 1;
-		}
-	}
-	int x = row * basesize_*basesize_ + 1;
-
-	for (int i = 0; i < basesize_*basesize_; i++)
-	{
-		if (theBoard_[x + i] == val)
-		{
-			val++;
-		}
-		else {
-			rowval.push_back(val);
-			val++;
-		}
-	}
-	//col
-	int y = col * basesize_*basesize_ + 1;
-
-	for (int i = 0; i < 9; i++)
-	{
-		if (theBoard_[y * basesize_*basesize_] == val)
-		{
-			val++;
-		}
-		else {
-			colval.push_back(val);
-			val++;
-		}
-	}
-
-	int cell = index;
-	int i = 1;
-	while (i * i != basicsize)
-	{
-		i++;
-	}
-
-	int remain = index % i;
-	cell -= remain;
-	int count = basesize_*basesize_ / i;
-
-	for (int j = 1; j <= count; j++) {
-		for (int k = 1; k <= count; k++)
-		{
-			if (val == theBoard_[cell + k])
+			if (place_value(((y + 1) * basicsize)) == true) //(0,y+1)
 			{
-				val++;
-			}
-			else {
-				cellval.push_back(val);
-				val++;
+				return true;
 			}
 		}
-		cell *= basesize_*basesize_;
-	}
-
-	long unsigned int a = 0;
-	long unsigned int b = 0;
-	std::vector<long unsigned int> firstvals;
-
-	while (a < rowval.size())
-	{
-		if (find(colval.begin(), colval.end(), rowval[a]) != colval.end())
-		{
-			firstvals.push_back(a);
+		else {
+			if (place_value((y * basicsize + x)) == true)
+			{
+				return true;
+			}
 		}
-		a++;
-	}
 
-	char result = 0;
+		theBoard_[index] = ' ';
 
-	while (b < cellval.size())
-	{
-		if ( find(firstvals.begin(), firstvals.end(), cellval[b]) !=  firstvals.end())
-		{
-			result = cellval[b];
-			callback_(*this, theBoard_, MessageType::MSG_PLACING, moves_, stats_.basesize, index, result,0);
-			return true;
-		}
-		b++;
-	}
-	return true;
-}
-
-bool Sudoku::is_empty(int index)
-{
-	if (theBoard_[index] == ' ')
-	{
-		return true;
+		stats_.backtracks++;
+		callback_(*this, theBoard_, MessageType::MSG_REMOVING, moves_, stats_.basesize, index, val, dubindex_);
 	}
 	return false;
 }
 
-int Sudoku::next_empty_cell(int from)
-{
-	int count = basicsize - from;
+bool Sudoku::isvalid(unsigned x, unsigned y, char val) {
 
-	/*for (int i = 0; i < count; i++)
-	{
-		if (theBoard_[i] == ' ')
-		{
-			return i;
-		}
-	}*/
-	while(theBoard_[count] != ' ')
-	{
-	    count++;
-	    moves_++;
-	}
-	return count;
 }
-
-const char* Sudoku::GetBoard() const
-{
-	return theBoard_;
-}
-
-Sudoku::SudokuStats Sudoku::GetStats() const
-{
-	return stats_;
-}
-

@@ -20,6 +20,8 @@ public:
 
 private:
     // private stuff...
+    using BinTreeN = typename BSTree<T>::BinTreeNode*;
+    BinTreeN RootNode;
 
 };
 

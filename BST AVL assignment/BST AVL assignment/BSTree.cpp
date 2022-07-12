@@ -156,9 +156,13 @@ int BSTree<T>::height() const
 		return -1;
 	}
 	if (tree_height(node->left) > tree_height(node->right))
+	{
 		return tree_height(node->left) + 1;
+	}
 	else
+	{
 		return tree_height(node->right) + 1;
+	}
 }
 
 template<typename T>

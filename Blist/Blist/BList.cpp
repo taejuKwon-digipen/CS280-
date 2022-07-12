@@ -161,58 +161,259 @@ void BList<T, Size>::push_front(const T& value)
 	}
 }
 
-
-
 // arrays will be sorted, if calling this
 template<typename T, int Size>
 void BList<T, Size>::insert(const T& value)
 {
-	push_back(value);
-	//if not empty
-	if (stats_.ItemCount != 0)
+	//push_back(value);
+	if (size()) //not empty
 	{
-		//find most fitting node
-		BNode* p_node = head_;
-		unsigned i = 0;
-		while (p_node != nullptr)
-		{
-			while (p_node->values[i] < value)
-			{
-				i++;
-			}
-			if (p_node != tail_ && p_node->next->values[0] < p_node->values[i])
-			{
-				p_node = p_node->next;
-			}
-			i = 0;
-			break;
-			//find i
-		}
+		BNode* node = head_;
 
-		//fitting node-> p_node.values[i] = value
-		if (p_node->count >= Size) //node full
+		while (node->next == nullptr) //node is not full
 		{
-			split_node(p_node);
-		}
-		//if node is not full => just push back in last node
-		if (i + 1 < Size) //not last in node
-		{
-			for (unsigned int j = i; j + 1 >= Size; j++)
+			if (value < node->values[0])
 			{
-				p_node->values[j + 1] = p_node->values[j];
-			} //move next number to right
-			p_node->values[i] = value; //insert
+				break;
+			}
+			if (node->values[0] < value && value < node->values[node->count - 1])
+			{
+				break;
+			}
+
+			if (node->values[0] < value && value < node->next->values[0])
+			{
+				if (node->count < stats_.ArraySize || node->count == stats_.ItemCount)
+				{
+					if (node->next->count == stats_.ArraySize)
+					{
+						break;
+					}
+				}
+			}
+			node = node->next;
 		}
-		else { //last in node
-			p_node->values[i] = value;
+		if (node == nullptr) { return; }
+
+		if (node->count < stats_.ArraySize)
+		{
+			int offset = FindOffset(value, node);
+			for (int i = node->count; i > offset; --i)
+			{
+				node->values[i] = node->values[i - 1];
+			}
+			node->values[offset] = value;
+			++node->count;
+		}
+		else
+		{
+			if (node->count == 1)
+			{
+				BNode* node;
+				try
+				{
+					node = new BNode;
+				}
+				catch (BListException&)
+				{
+					throw BListException(BListException::BLIST_EXCEPTION::E_NO_MEMORY, "Make Node: No Memory");
+				}
+
+				BNode* newNode = node;
+				newNode->values[0] = value;
+				++newNode->count;
+
+				if (value < node->values[0])
+				{
+					if (node == head_)
+					{
+						node->prev = newNode;
+						newNode->prev = nullptr;
+						newNode->next = node;
+						head_ = newNode;
+					}
+					else
+					{
+						node->prev->next = newNode;
+						newNode->prev = node->prev;
+						newNode->next = node;
+						node->prev = newNode;
+					}
+				}
+				else
+				{
+					if (node == tail_)
+					{
+						node->next = newNode;
+						newNode->next = nullptr;
+						newNode->prev = node;
+						tail_ = newNode;
+					}
+					else
+					{
+						node->next->prev = newNode;
+						newNode->prev = node;
+						newNode->next = node->next;
+						node->next = newNode;
+					}
+				}
+			}
+			else
+			{
+				BNode* node_;
+				try
+				{
+					node_ = new BNode;
+				}
+				catch (BListException&)
+				{
+					throw BListException(BListException::BLIST_EXCEPTION::E_NO_MEMORY, "Make Node: No Memory");
+				}
+
+				++stats_.NodeCount;
+
+				BNode* left = node;
+				BNode* right = node_;
+				right->next = left->next;
+				if (left != tail_)
+				{
+					left->next->prev = right;
+				}
+				else
+				{
+					tail_ = right;
+				}
+				left->next = right;
+				right->prev = left;
+
+				for (int i = left->count / 2; i < left->count; ++i)
+				{
+					right->values[right->count] = left->values[i];
+					++right->count;
+				}
+				left->count -= right->count;
+
+				if (right->values[right->count - 1] < value)
+				{
+					right->values[right->count] = value;
+					++right->count;
+				}
+				else if (value < right->values[0])
+				{
+					int position = 0;
+
+					BNode* curr = head_;
+
+					while (curr)
+					{
+						position += curr->count;
+						int offset
+						if (value < position)
+						{
+							offset = curr->count - (position - value);
+							*node = curr;
+						}
+						curr = curr->next;
+						else {
+							offset = -1;
+						}
+					}
+
+					for (int i = left->count; i > offset; --i)
+					{
+						left->values[i] = left->values[i - 1];
+					}
+					left->values[offset] = value;
+					++left->count;
+
+				}
+				else
+				{
+					BNode* curr = head_;
+
+					while (curr)
+					{
+						position += curr->count;
+						int offset;
+						if (value < position)
+						{
+							offset = curr->count - (position - value);
+							*node = curr;
+						}
+						curr = curr->next;
+						else {
+							offset = -1;
+						}
+					}
+					for (int i = right->count; i > offset; --i)
+					{
+						right->values[i] = right->values[i - 1];
+					}
+					right->values[offset] = value;
+					++right->count;
+				}
+			}
 		}
 	}
 	else
 	{
-		BNode* p_node = new BNode;
-	}
 
+		BNode* node_;
+		try
+		{
+			node_ = new BNode;
+		}
+		catch (BListException&)
+		{
+			throw BListException(BListException::BLIST_EXCEPTION::E_NO_MEMORY, "Make Node: No Memory");
+		}
+
+		++stats_.NodeCount;
+		BNode* node = node_;
+		node->values[0] = value;
+		++node->count;
+		head_ = node;
+		tail_ = node;
+		++stats_.ItemCount;
+	}
 }
+
+template<typename T, int Size>
+typename BList<T, Size>::BNode* BList<T, Size>::findfittingNode(const T& value)
+{
+	node = head_;
+	//if value < max value of node
+	while (node != nullptr)
+	{
+		if (value < node->values[Size - 1])
+		{
+			return node;
+		}/*else if (value == node->values[Size-1])
+		{
+			return node;
+		}*/
+		if (node != tail_ && value < node->next->values[0])
+		{
+			if (node->count < Size) //not full
+			{
+				return node;
+			}
+			else if (node->count == Size && node->next->count == Size) //full 
+			{
+				return node;
+			}
+		}
+		/*else if(Size == 1,tail_ != nullptr){
+			BNode* newnode = new BNode;
+			node->next = newnode;
+			tail_ = newnode;
+			newnode->prev = node;
+		}*/
+		node = node->next;
+	}
+	return node;
+}
+
 template<typename T, int Size>
 typename BList<T, Size>::BNode* BList<T, Size>::split_node(BNode* curr)
 {

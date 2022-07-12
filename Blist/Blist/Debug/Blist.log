@@ -1,2 +1,2 @@
 ﻿  driver.cpp
-  Blist.vcxproj -> C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Debug\Blist.exe
+C:\Users\권태주\OneDrive\바탕 화면\CS280\CS280-\Blist\Blist\BList.cpp(316,7): error C2760: syntax error: unexpected token 'else', expected 'statement'
